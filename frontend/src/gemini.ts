@@ -1,68 +1,60 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
+// Veritas AI / DocuGuard AI 
+// Secure API Wrapper
 
-// Read the API key dynamically from environment variables
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
-const genAI = new GoogleGenerativeAI(API_KEY);
+const BACKEND_URL = "http://localhost:8000/api/v1"; // In production, this would point to the deployed backend URL
 
 export async function processQuery(query: string, context: string): Promise<string> {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-        const prompt = `Context:\n${context}\n\nQuery: ${query}\n\nAnswer the query strictly based on the provided context. If the context does not contain the answer, say "I cannot answer this based on the provided document."`;
+        const response = await fetch(`${BACKEND_URL}/query`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                query: query,
+                context_doc: context
+            })
+        });
         
-        const result = await model.generateContent(prompt);
-        return result.response.text();
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data.answer || "An error occurred while connecting to the AI.";
     } catch (error) {
-        console.error("Error connecting to Gemini API:", error);
+        console.error("Error connecting to backend API:", error);
         return "An error occurred while connecting to the AI.";
     }
 }
 
 export async function analyzeDocumentWithAI(context: string): Promise<any> {
     try {
-        const model = genAI.getGenerativeModel({ 
-            model: "gemini-1.5-flash",
-            generationConfig: {
-                responseMimeType: "application/json"
-            }
+        const response = await fetch(`${BACKEND_URL}/analyze`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                context: context
+            })
         });
-
-        const prompt = `You are an expert enterprise AI auditor. Analyze the following document and return a JSON object with this EXACT structure:
-{
-  "complianceScore": <number 0-100>,
-  "riskScore": <number 0-100>,
-  "fraudProbability": <number 0-100>,
-  "confidenceScore": <number 0-100>,
-  "executiveSummary": "<string>",
-  "keyClauses": ["<string>", "<string>"],
-  "missingClauses": ["<string>"],
-  "positiveFindings": ["<string>"],
-  "highRiskFindings": ["<string>"],
-  "recommendedActions": ["<string>"],
-  "complianceChecks": [
-    { "id": <number>, "rule": "<string>", "status": "<'Passed'|'Warning'|'Failed'>", "details": "<string>" }
-  ],
-  "risks": [
-    { "id": <number>, "type": "<'Financial'|'Operational'|'Legal'>", "severity": "<'High'|'Medium'|'Low'>", "description": "<string>", "location": "<string>" }
-  ]
-}
-
-Ensure there are exactly 4 compliance checks and 3 risks. Be extremely analytical and base all findings, scores, and risks strictly on the document text. Be critical. If it's a vendor agreement with a low liability cap, flag it as a risk. If it's an NDA missing signatures, flag it as fraud or risk.
-
-Document Content:
-${context.substring(0, 50000)}
-`;
-
-        const result = await model.generateContent(prompt);
-        const text = result.response.text();
-        return JSON.parse(text);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        return data;
     } catch (error) {
-        console.error("Error analyzing document:", error);
+        console.error("Error analyzing document via backend:", error);
+        // Fallback object to prevent UI crashes if backend is totally unreachable
         return {
             complianceScore: 78,
             riskScore: 45,
             fraudProbability: 12,
             confidenceScore: 94,
-            executiveSummary: "This document contains standard provisions but lacks several critical clauses required by enterprise policy, exposing the firm to moderate financial risk.",
+            executiveSummary: "FALLBACK DATA (BACKEND UNAVAILABLE) - This document contains standard provisions but lacks several critical clauses required by enterprise policy.",
             keyClauses: ["Confidentiality", "Governing Law"],
             missingClauses: ["Indemnification", "Data Processing Consent (GDPR)"],
             positiveFindings: ["Clear termination clauses", "Appropriate jurisdiction defined"],
@@ -70,7 +62,7 @@ ${context.substring(0, 50000)}
             recommendedActions: ["Request revision of IP clause", "Escalate to legal for indemnification review"],
             complianceChecks: [
                 { id: 1, rule: "GDPR Consent", status: "Failed", details: "No explicit consent for EU data processing found." },
-                { id: 2, rule: "Standard Arbitration", status: "Passed", details: "Arbitration clause meets enterprise standards." },
+                { id: 2, rule: "Standard Arbitration", status: "Passed", "details": "Arbitration clause meets enterprise standards." },
                 { id: 3, rule: "Liability Cap", status: "Warning", details: "Cap is ambiguously defined." },
                 { id: 4, rule: "Confidentiality Duration", status: "Passed", details: "Survives termination for 5 years." }
             ],

@@ -46,7 +46,6 @@ const MENU_GROUPS = [
     items: [
       { id: 'agents', label: 'Agent Hub', icon: Network, path: '/app/agents' },
       { id: 'copilot', label: 'AI Copilot', icon: MessageSquare, path: '/app/copilot' },
-      { id: 'intelligence', label: 'Doc Intelligence', icon: Brain, path: '/app/intelligence' },
       { id: 'architecture', label: 'Architecture', icon: Database, path: '/app/architecture' },
     ]
   },

@@ -37,7 +37,6 @@ function App() {
         <Route path="documents" element={<DocumentCenter />} />
         <Route path="agents" element={<AgentHub />} />
         <Route path="workflow" element={<WorkflowVisualizer />} />
-        <Route path="intelligence" element={<DocIntelligence />} />
         <Route path="compliance" element={<ComplianceRiskFraud view="compliance" />} />
         <Route path="risk" element={<ComplianceRiskFraud view="risk" />} />
         <Route path="fraud" element={<ComplianceRiskFraud view="fraud" />} />
