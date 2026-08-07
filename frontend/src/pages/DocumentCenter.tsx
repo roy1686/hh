@@ -69,23 +69,21 @@ export function DocumentCenter() {
       });
 
       updateFromAI({
-        metrics: {
-          documentsProcessed: metrics.documentsProcessed + 1,
-          complianceScore: aiResults.complianceScore || 85,
-          riskScore: aiResults.riskScore || 20
-        },
         complianceChecks: aiResults.complianceChecks || [],
         risks: aiResults.risks || [],
-        aiInsights: {
-          fraudProbability: aiResults.fraudProbability || 5,
-          confidenceScore: aiResults.confidenceScore || 95,
-          summary: aiResults.executiveSummary,
-          keyClauses: aiResults.keyClauses,
-          missingClauses: aiResults.missingClauses,
-          positiveFindings: aiResults.positiveFindings,
-          highRiskFindings: aiResults.highRiskFindings,
-          recommendedActions: aiResults.recommendedActions
-        }
+        fraudProbability: aiResults.fraudProbability || 5,
+        confidenceScore: aiResults.confidenceScore || 95,
+        summary: aiResults.executiveSummary,
+        keyClauses: aiResults.keyClauses || [],
+        missingClauses: aiResults.missingClauses || [],
+        positiveFindings: aiResults.positiveFindings || [],
+        highRiskFindings: aiResults.highRiskFindings || [],
+        recommendedActions: aiResults.recommendedActions || [],
+        auditTimeline: logs
+      }, {
+        documentsProcessed: metrics.documentsProcessed + 1,
+        complianceScore: aiResults.complianceScore || 85,
+        riskScore: aiResults.riskScore || 20
       });
 
       setTimeout(() => {
@@ -107,7 +105,8 @@ export function DocumentCenter() {
     if (!file) return;
     try {
       const text = await extractTextFromFile(file);
-      setDocumentContext(text);
+      const docId = `upload_${Date.now()}`;
+      setDocumentContext(text, docId);
       executePipeline(text);
     } catch (err) {
       console.error(err);
@@ -115,8 +114,8 @@ export function DocumentCenter() {
     }
   };
 
-  const handleDemoClick = (docText: string) => {
-    setDocumentContext(docText);
+  const handleDemoClick = (docText: string, docId: string) => {
+    setDocumentContext(docText, docId);
     executePipeline(docText);
   };
 
@@ -144,7 +143,7 @@ export function DocumentCenter() {
               {demoDocuments.map(doc => (
                 <button 
                   key={doc.id}
-                  onClick={() => handleDemoClick(doc.content)}
+                  onClick={() => handleDemoClick(doc.content, doc.id)}
                   disabled={workflowStage === 'processing'}
                   className="flex items-center justify-between px-4 py-3 bg-surface border border-white/10 rounded-lg hover:border-primary/50 hover:bg-primary/5 transition-all text-left group disabled:opacity-50"
                 >

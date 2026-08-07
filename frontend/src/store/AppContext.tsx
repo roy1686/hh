@@ -1,42 +1,84 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
-import { mockData as initialMockData } from './mockData';
+
+type AnalysisResult = {
+  complianceChecks: any[];
+  risks: any[];
+  fraudProbability: number;
+  confidenceScore: number;
+  summary: string;
+  keyClauses: string[];
+  missingClauses: string[];
+  positiveFindings: string[];
+  highRiskFindings: string[];
+  recommendedActions: string[];
+  auditTimeline: { time: string; msg: string }[];
+};
 
 type AppState = {
   documentContext: string;
-  metrics: typeof initialMockData.metrics;
-  complianceChecks: typeof initialMockData.complianceChecks;
-  risks: typeof initialMockData.risks;
-  aiInsights: any; // Holds summary, clauses, etc.
-  setDocumentContext: (text: string) => void;
-  updateFromAI: (data: any) => void;
+  currentDocumentId: string | null;
+  metrics: {
+    documentsProcessed: number;
+    complianceScore: number;
+    riskScore: number;
+  };
+  currentAnalysis: AnalysisResult | null;
+  setDocumentContext: (text: string, documentId: string) => void;
+  updateFromAI: (data: Partial<AnalysisResult>, globalMetrics?: Partial<AppState['metrics']>) => void;
+  clearAnalysis: () => void;
 };
 
 const AppContext = createContext<AppState | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [documentContext, setDocumentContext] = useState<string>('');
-  const [metrics, setMetrics] = useState(initialMockData.metrics);
-  const [complianceChecks, setComplianceChecks] = useState(initialMockData.complianceChecks);
-  const [risks, setRisks] = useState(initialMockData.risks);
-  const [aiInsights, setAiInsights] = useState<any>({});
+  const [documentContext, setDocumentContextState] = useState<string>('');
+  const [currentDocumentId, setCurrentDocumentId] = useState<string | null>(null);
+  
+  // Global aggregate metrics (could be fetched from a real backend DB in the future)
+  const [metrics, setMetrics] = useState({
+    documentsProcessed: 12453,
+    complianceScore: 0,
+    riskScore: 0
+  });
 
-  const updateFromAI = (data: any) => {
-    if (data.metrics) {
-      setMetrics(prev => ({ ...prev, ...data.metrics }));
-    }
-    if (data.complianceChecks) {
-      setComplianceChecks(data.complianceChecks);
-    }
-    if (data.risks) {
-      setRisks(data.risks);
-    }
-    if (data.aiInsights) {
-      setAiInsights(data.aiInsights);
+  const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(null);
+
+  const setDocumentContext = (text: string, documentId: string) => {
+    // When a new document is selected, CLEAR the old analysis state to prevent bleed-through
+    setDocumentContextState(text);
+    setCurrentDocumentId(documentId);
+    setCurrentAnalysis(null);
+  };
+
+  const clearAnalysis = () => {
+    setCurrentAnalysis(null);
+  };
+
+  const updateFromAI = (data: Partial<AnalysisResult>, globalMetrics?: Partial<AppState['metrics']>) => {
+    setCurrentAnalysis(prev => {
+      const base: AnalysisResult = prev || {
+        complianceChecks: [],
+        risks: [],
+        fraudProbability: 0,
+        confidenceScore: 0,
+        summary: "",
+        keyClauses: [],
+        missingClauses: [],
+        positiveFindings: [],
+        highRiskFindings: [],
+        recommendedActions: [],
+        auditTimeline: []
+      };
+      return { ...base, ...data };
+    });
+
+    if (globalMetrics) {
+      setMetrics(prev => ({ ...prev, ...globalMetrics }));
     }
   };
 
   return (
-    <AppContext.Provider value={{ documentContext, setDocumentContext, metrics, updateFromAI, complianceChecks, risks, aiInsights }}>
+    <AppContext.Provider value={{ documentContext, currentDocumentId, metrics, currentAnalysis, setDocumentContext, updateFromAI, clearAnalysis }}>
       {children}
     </AppContext.Provider>
   );

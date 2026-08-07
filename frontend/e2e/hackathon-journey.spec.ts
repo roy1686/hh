@@ -1,63 +1,69 @@
 import { test, expect } from '@playwright/test';
 
-test('Critical Hackathon Journey', async ({ page }) => {
-  // 1. Landing Page
+test('Test Document Differentiation (Document A vs Document B)', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveTitle(/frontend|Vite/i);
   
-  // 2. Wait for 5-second splash screen to finish (or bypass if state allows, but we must wait)
-  // The splash screen takes 5 seconds. We will wait 6 seconds to be safe.
+  // Wait for splash screen
   await page.waitForTimeout(6000);
-
-  // Navigate to Dashboard
   await page.click('text=Launch Console');
   
-  // 3. Command Center (Default route)
-  await expect(page.locator('text=Command Center').first()).toBeVisible();
-
-  // 4. Document Center
-  await page.click('text=Document Center');
-  await expect(page.locator('text=1-Click Demo Library')).toBeVisible();
-
-  // 5. Select Demo Document & Analyze
-  // We mock the backend response here because in CI there's no Gemini key.
-  // The backend might not even be running, so let's use Playwright route interception.
+  // Intercept backend calls to simulate two distinct documents
   await page.route('**/api/v1/analyze', async route => {
-    const json = {
-      complianceScore: 82,
-      riskScore: 25,
-      fraudProbability: 5,
-      confidenceScore: 99,
-      executiveSummary: 'MOCKED E2E DATA: This document is fully compliant.',
-      keyClauses: ['Mock Clause A'],
-      missingClauses: ['Mock Clause B'],
-      positiveFindings: ['Mock Positive'],
-      highRiskFindings: ['Mock Risk'],
-      recommendedActions: ['Mock Action'],
-      complianceChecks: [
-        { id: 1, rule: 'Mock Rule', status: 'Passed', details: 'Mock Details' }
-      ],
-      risks: [
-        { id: 1, type: 'Legal', severity: 'Low', description: 'Mock Risk', location: 'Page 1' }
-      ]
-    };
-    await route.fulfill({ json });
+    const request = route.request();
+    const postData = request.postDataJSON();
+    const isDocA = postData.context.includes("Employment Agreement");
+    
+    if (isDocA) {
+      await route.fulfill({ json: {
+        complianceScore: 90,
+        riskScore: 10,
+        fraudProbability: 2,
+        executiveSummary: 'This is Document A',
+        positiveFindings: ['30 days notice verified'],
+        complianceChecks: [{ id: 1, rule: 'Notice Period', status: 'Passed', details: '30 days' }],
+        risks: [],
+        highRiskFindings: ['Critical Risk A']
+      }});
+    } else {
+      await route.fulfill({ json: {
+        complianceScore: 50,
+        riskScore: 80,
+        fraudProbability: 15,
+        executiveSummary: 'This is Document B',
+        positiveFindings: ['90 days notice verified'],
+        complianceChecks: [{ id: 1, rule: 'Notice Period', status: 'Warning', details: '90 days' }],
+        risks: [],
+        highRiskFindings: ['Critical Risk B']
+      }});
+    }
   });
 
-  // Click the first demo document
+  // Test Document A
+  await page.click('a:has-text("Document Center")');
   await page.click('button:has-text("Employment Agreement")');
-
-  // 6. Wait for processing
-  // The frontend has artificial delays (1000ms + 1000ms + 800ms + 800ms) = ~3.6s
-  await page.waitForTimeout(5000);
+  await page.waitForTimeout(5000); // Wait for pipeline
+  await page.click('text=Approve');
   
-  // 7. Verify Human Approval Gateway appears
-  await expect(page.locator('text=Human Approval Gateway')).toBeVisible();
+  await page.click('a:has-text("Compliance")');
+  await expect(page.locator('text=30 days notice verified')).toBeVisible();
 
-  // 8. Human Approval (Approve)
+  await page.click('a:has-text("Risk Vectors")');
+  await expect(page.locator('text=Critical Risk A')).toBeVisible();
+
+  // Test Document B
+  await page.click('a:has-text("Document Center")');
+  await page.click('button:has-text("Mutual Non-Disclosure Agreement")');
+  await page.waitForTimeout(5000); // Wait for pipeline
   await page.click('text=Approve');
 
-  // 9. Check Copilot
-  await page.click('text=AI Copilot');
-  await expect(page.locator('text=AI Chat').first()).toBeVisible();
+  await page.click('a:has-text("Compliance")');
+  await expect(page.locator('text=90 days notice verified')).toBeVisible();
+  
+  // Verify A's data is gone
+  await expect(page.locator('text=30 days notice verified')).not.toBeVisible();
+
+  await page.click('a:has-text("Risk Vectors")');
+  await expect(page.locator('text=Critical Risk B')).toBeVisible();
+  await expect(page.locator('text=Critical Risk A')).not.toBeVisible();
 });

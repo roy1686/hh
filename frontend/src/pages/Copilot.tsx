@@ -9,7 +9,6 @@ export function Copilot() {
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
   
   const initialAgents = [
     { name: "Knowledge Retrieval Agent", status: "idle", icon: Layers },
@@ -22,7 +21,7 @@ export function Copilot() {
 
 
   const handleQuery = async () => {
-    if (!query) return;
+    if (!query || !documentContext) return;
     setLoading(true);
     setAnswer('');
     
@@ -68,18 +67,32 @@ export function Copilot() {
           <h2 className="text-2xl font-semibold mb-2">Knowledge Base Loaded</h2>
           <p className="text-gray-400 mb-6 text-sm">Your enterprise document is ready for analysis.</p>
           
-          <div className="border border-primary/30 bg-primary/5 rounded-xl p-6 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/20 rounded-full">
-                <FileText className="w-6 h-6 text-primary" />
-              </div>
-              <div>
-                <p className="font-medium text-white">Document Active</p>
-                <p className="text-sm text-gray-400">The multi-agent system has contextualized this document.</p>
+          {!documentContext ? (
+            <div className="border border-red-500/30 bg-red-500/5 rounded-xl p-6 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-red-500/20 rounded-full">
+                  <Shield className="w-6 h-6 text-red-500" />
+                </div>
+                <div>
+                  <p className="font-medium text-white">No Document Loaded</p>
+                  <p className="text-sm text-gray-400">Upload or select a document in the Orchestrator first.</p>
+                </div>
               </div>
             </div>
-            <CheckCircle className="w-6 h-6 text-green-400" />
-          </div>
+          ) : (
+            <div className="border border-primary/30 bg-primary/5 rounded-xl p-6 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-primary/20 rounded-full">
+                  <FileText className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium text-white">Document Active</p>
+                  <p className="text-sm text-gray-400">The multi-agent system has contextualized this document.</p>
+                </div>
+              </div>
+              <CheckCircle className="w-6 h-6 text-green-400" />
+            </div>
+          )}
         </motion.div>
 
         <motion.div 
@@ -108,10 +121,11 @@ export function Copilot() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleQuery()}
-              placeholder="Ask about compliance risks, obligations, or deadlines..." 
-              className="w-full bg-surface border border-gray-700 rounded-xl pl-4 pr-12 py-3 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
+              placeholder={documentContext ? "Ask about compliance risks, obligations, or deadlines..." : "Waiting for document..."}
+              disabled={!documentContext}
+              className="w-full bg-surface border border-gray-700 rounded-xl pl-4 pr-12 py-3 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all disabled:opacity-50"
             />
-            <button onClick={handleQuery} className="absolute right-2 top-2 p-1.5 bg-primary rounded-lg text-white hover:bg-primary/90">
+            <button onClick={handleQuery} disabled={!documentContext || !query} className="absolute right-2 top-2 p-1.5 bg-primary rounded-lg text-white hover:bg-primary/90 disabled:opacity-50 disabled:hover:bg-primary">
               <Search className="w-4 h-4" />
             </button>
           </div>
