@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-gray-100 font-sans antialiased selection:bg-accent/30;
+  }
+}
+
+.glass-panel {
+  @apply bg-surface/40 backdrop-blur-2xl border border-white/5 rounded-2xl shadow-2xl;
+}
+
+.custom-scrollbar,
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.75) rgba(6, 10, 13, 0.8);
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: rgba(6, 10, 13, 0.75);
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.95), rgba(212, 175, 55, 0.85));
+  border-radius: 9999px;
+  border: 2px solid rgba(6, 10, 13, 0.8);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(16, 185, 129, 1), rgba(212, 175, 55, 1));
+}
+
+.aurora-gradient {
+  background: radial-gradient(circle at top left, rgba(16, 185, 129, 0.15), transparent 40%),
+              radial-gradient(circle at bottom right, rgba(212, 175, 55, 0.1), transparent 40%);
+}
+
+.glow-hover:hover {
+  box-shadow: 0 0 30px rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.4);
+}
