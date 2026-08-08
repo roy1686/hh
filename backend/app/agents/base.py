@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import Any, Dict, List, Optional
-import google.generativeai as genai
+import google.genai as genai
 from app.core.config import get_settings
 
 class AgentResponse(BaseModel):
@@ -16,10 +16,10 @@ class BaseAgent:
         self.role = role
         settings = get_settings()
         if settings.GEMINI_API_KEY:
-            genai.configure(api_key=settings.GEMINI_API_KEY)
-            self.model = genai.GenerativeModel('gemini-1.5-pro')
+            self.client = genai.Client(api_key=settings.GEMINI_API_KEY)
+            self.model_name = 'gemini-3.5-flash'
         else:
-            self.model = None # Mock mode
+            self.client = None # Mock mode
 
     async def execute(self, state: Dict[str, Any]) -> AgentResponse:
         """Execute the agent's main logic."""

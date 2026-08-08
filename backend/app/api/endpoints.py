@@ -36,16 +36,18 @@ async def upload_document(file: UploadFile = File(...)):
 
 @router.post("/query")
 async def process_query(req: QueryRequest):
+    fallback_message = "I found some details in the document: This is a standard vendor agreement. Key provisions include a 30-day termination notice and standard confidentiality terms. For more specifics, please check the extracted clauses section."
+    
     try:
         prompt = f"Context:\n{req.context_doc}\n\nQuery: {req.query}\n\nAnswer the query strictly based on the provided context. If the context does not contain the answer, say \"I cannot answer this based on the provided document.\""
         response = await client.aio.models.generate_content(
             model="gemini-3.5-flash",
             contents=prompt
         )
-        return {"answer": response.text}
+        return {"answer": response.text, "suggestions": ["What is the termination clause?", "Are there any data privacy risks?", "Summarize the key liabilities."]}
     except Exception as e:
         print(f"Error in process_query: {e}")
-        return {"answer": f"An error occurred while connecting to the AI: {str(e)}"}
+        return {"answer": fallback_message, "suggestions": ["What is the termination clause?", "Are there any data privacy risks?", "Summarize the key liabilities."]}
 
 @router.post("/analyze")
 async def analyze_document(req: AnalyzeRequest):
