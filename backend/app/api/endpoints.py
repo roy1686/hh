@@ -4,7 +4,7 @@ from app.agents.orchestrator import Orchestrator
 from app.services.pdf_service import PDFService
 from app.services.vector_store import VectorStore
 from app.core.config import get_settings
-import google.generativeai as genai
+from google import genai
 import uuid
 import json
 
@@ -14,7 +14,7 @@ vector_store = VectorStore()
 pdf_service = PDFService()
 settings = get_settings()
 
-genai.configure(api_key=settings.GEMINI_API_KEY)
+client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 class QueryRequest(BaseModel):
     query: str
@@ -37,17 +37,19 @@ async def upload_document(file: UploadFile = File(...)):
 @router.post("/query")
 async def process_query(req: QueryRequest):
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
         prompt = f"Context:\n{req.context_doc}\n\nQuery: {req.query}\n\nAnswer the query strictly based on the provided context. If the context does not contain the answer, say \"I cannot answer this based on the provided document.\""
-        response = model.generate_content(prompt)
+        response = await client.aio.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=prompt
+        )
         return {"answer": response.text}
     except Exception as e:
-        return {"answer": "An error occurred while connecting to the AI."}
+        print(f"Error in process_query: {e}")
+        return {"answer": f"An error occurred while connecting to the AI: {str(e)}"}
 
 @router.post("/analyze")
 async def analyze_document(req: AnalyzeRequest):
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
         prompt = f"""You are an expert enterprise AI auditor. Analyze the following document and return a JSON object with this EXACT structure:
 {{
   "complianceScore": <number 0-100>,
@@ -76,8 +78,10 @@ Ensure there are exactly 4 compliance checks, 3 risks, and at least 3 extracted 
 Document Content:
 {req.context[:50000]}
 """
-        # Note: In a real app we'd use responseMimeType="application/json", but generate_content works well with prompt enforcement here.
-        response = model.generate_content(prompt)
+        response = await client.aio.models.generate_content(
+            model="gemini-3.5-flash",
+            contents=prompt
+        )
         text = response.text
         # Strip markdown json block if present
         if text.startswith("```json"):
