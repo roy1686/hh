@@ -61,10 +61,14 @@ const MENU_GROUPS = [
   {
     title: 'System',
     items: [
+      { id: 'documents', label: 'Documents', icon: Files, path: '/app/documents' },
+      { id: 'analysis', label: 'Analysis', icon: LineChart, path: '/app/analytics' },
+      { id: 'chat', label: 'AI Chat', icon: MessageSquare, path: '/app/copilot' },
+      { id: 'history', label: 'History', icon: Terminal, path: '/app/audit' },
+      { id: 'settings', label: 'Settings', icon: Settings, path: '/app/settings' },
       { id: 'users', label: 'Users', icon: Users, path: '/app/users' },
       { id: 'knowledge', label: 'Knowledge Base', icon: Database, path: '/app/knowledge' },
       { id: 'integrations', label: 'Integrations', icon: Grid, path: '/app/integrations' },
-      { id: 'settings', label: 'Settings', icon: Settings, path: '/app/settings' },
     ]
   }
 ];
@@ -192,11 +196,11 @@ export function DashboardLayout() {
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-[#010804]"></span>
             </button>
             
-            <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#10B981] to-[#D4AF37] p-[2px] cursor-pointer">
+            <Link to="/app/settings" title="Profile Settings" className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#10B981] to-[#D4AF37] p-[2px] cursor-pointer hover:scale-105 transition-transform block">
               <div className="w-full h-full rounded-full bg-[#010804] flex items-center justify-center">
                 <span className="text-xs font-bold text-white">SC</span>
               </div>
-            </div>
+            </Link>
           </div>
         </header>
 
