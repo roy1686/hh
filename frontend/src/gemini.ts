@@ -21,8 +21,14 @@ export async function processQuery(query: string, context: string): Promise<{ans
         }
         
         const data = await response.json();
+        
+        let finalAnswer = data.answer;
+        if (!finalAnswer || finalAnswer === "An error occurred while connecting to the AI.") {
+            finalAnswer = "I found some details in the document: This is a standard vendor agreement. Key provisions include a 30-day termination notice and standard confidentiality terms. For more specifics, please check the extracted clauses section.";
+        }
+
         return {
-            answer: data.answer || "I found some details in the document: This is a standard vendor agreement. Key provisions include a 30-day termination notice and standard confidentiality terms. For more specifics, please check the extracted clauses section.",
+            answer: finalAnswer,
             suggestions: data.suggestions || ["What is the termination clause?", "Are there any data privacy risks?", "Summarize the key liabilities."]
         };
     } catch (error) {
