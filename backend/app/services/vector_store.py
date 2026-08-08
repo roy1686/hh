@@ -2,24 +2,13 @@ import chromadb
 from chromadb import Documents, EmbeddingFunction, Embeddings
 from app.core.config import get_settings
 from typing import List, Dict
-import google.generativeai as genai
-
 class CustomGeminiEmbeddingFunction(EmbeddingFunction):
     def __init__(self, api_key: str):
-        # We manually configure without passing 'headers' which breaks in newer versions
-        genai.configure(api_key=api_key)
+        pass
         
     def __call__(self, input: Documents) -> Embeddings:
-        # Note: 'models/text-embedding-004' or 'models/embedding-001'
-        embeddings = []
-        for text in input:
-            result = genai.embed_content(
-                model="models/embedding-001",
-                content=text,
-                task_type="retrieval_document"
-            )
-            embeddings.append(result['embedding'])
-        return embeddings
+        # Return a dummy zero vector of size 768 for the demo since document upload is bypassed
+        return [[0.0] * 768 for _ in input]
 
 class VectorStore:
     def __init__(self, persist_directory: str = "./chroma_db"):
