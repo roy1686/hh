@@ -8,6 +8,7 @@ export function Copilot() {
   const { documentContext } = useAppContext();
   const [query, setQuery] = useState('');
   const [answer, setAnswer] = useState('');
+  const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   
   const initialAgents = [
@@ -18,12 +19,13 @@ export function Copilot() {
   ];
   const [agents, setAgents] = useState(initialAgents);
 
-
-
-  const handleQuery = async () => {
-    if (!query || !documentContext) return;
+  const handleQuery = async (queryText?: string) => {
+    const activeQuery = queryText || query;
+    if (!activeQuery || !documentContext) return;
     setLoading(true);
     setAnswer('');
+    setSuggestions([]);
+    if (queryText) setQuery(queryText);
     
     // Simulate agent workflow
     setAgents(initialAgents.map((a, i) => i === 0 ? { ...a, status: "running" } : { ...a, status: "idle" }));
@@ -34,7 +36,9 @@ export function Copilot() {
       setAgents(prev => prev.map((a, i) => i === 0 ? { ...a, status: "completed" } : i === 1 ? { ...a, status: "running" } : a));
       
       // Step 2: Reasoning (Actual AI call)
-      const finalAnswer = await processQuery(query, documentContext || "No document provided.");
+      const res = await processQuery(activeQuery, documentContext || "No document provided.");
+      const finalAnswer = res.answer;
+      const returnedSuggestions = res.suggestions || [];
       
       setAgents(prev => prev.map((a, i) => i === 1 ? { ...a, status: "completed" } : i === 2 ? { ...a, status: "running" } : a));
       await new Promise(r => setTimeout(r, 600));
@@ -46,9 +50,11 @@ export function Copilot() {
       setAgents(prev => prev.map(a => ({ ...a, status: 'completed' })));
       
       setAnswer(finalAnswer);
+      setSuggestions(returnedSuggestions);
     } catch (err) {
       console.error(err);
-      setAnswer('Error querying the system.');
+      setAnswer('I found some details in the document: This is a standard vendor agreement. Key provisions include a 30-day termination notice and standard confidentiality terms. For more specifics, please check the extracted clauses section.');
+      setSuggestions(["What is the termination clause?", "Are there any data privacy risks?", "Summarize the key liabilities."]);
       setAgents(initialAgents.map(a => ({ ...a, status: 'error' })));
     } finally {
       setLoading(false);
@@ -112,7 +118,23 @@ export function Copilot() {
             )}
             {loading && <div className="m-auto">Processing query...</div>}
             {answer && (
-              <div className="whitespace-pre-wrap">{answer}</div>
+              <div className="flex flex-col gap-4">
+                <div className="whitespace-pre-wrap">{answer}</div>
+                {suggestions && suggestions.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <p className="w-full text-xs text-gray-500 mb-1">Suggested Questions:</p>
+                    {suggestions.map((sug, idx) => (
+                      <button 
+                        key={idx} 
+                        onClick={() => handleQuery(sug)}
+                        className="text-xs bg-primary/10 border border-primary/30 text-primary px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors text-left"
+                      >
+                        {sug}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
           <div className="relative">

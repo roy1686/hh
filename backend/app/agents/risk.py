@@ -9,7 +9,7 @@ class RiskIntelligenceAgent(BaseAgent):
         )
     
     async def execute(self, state: Dict[str, Any]) -> AgentResponse:
-        if not self.model:
+        if not getattr(self, 'client', None):
             return await self.mock_execute(state)
             
         return AgentResponse(

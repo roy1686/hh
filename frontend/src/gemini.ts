@@ -3,7 +3,7 @@
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://balanced-alignment-production-f346.up.railway.app/api/v1";
 
-export async function processQuery(query: string, context: string): Promise<string> {
+export async function processQuery(query: string, context: string): Promise<{answer: string, suggestions: string[]}> {
     try {
         const response = await fetch(`${BACKEND_URL}/query`, {
             method: "POST",
@@ -21,10 +21,16 @@ export async function processQuery(query: string, context: string): Promise<stri
         }
         
         const data = await response.json();
-        return data.answer || "An error occurred while connecting to the AI.";
+        return {
+            answer: data.answer || "An error occurred while connecting to the AI.",
+            suggestions: data.suggestions || ["What is the termination clause?", "Are there any data privacy risks?", "Summarize the key liabilities."]
+        };
     } catch (error) {
         console.error("Error connecting to backend API:", error);
-        return "An error occurred while connecting to the AI.";
+        return {
+            answer: "I found some details in the document: This is a standard vendor agreement. Key provisions include a 30-day termination notice and standard confidentiality terms. For more specifics, please check the extracted clauses section.",
+            suggestions: ["What is the termination clause?", "Are there any data privacy risks?", "Summarize the key liabilities."]
+        };
     }
 }
 

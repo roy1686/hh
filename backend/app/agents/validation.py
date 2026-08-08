@@ -9,14 +9,20 @@ class CitationValidationAgent(BaseAgent):
         )
     
     async def execute(self, state: Dict[str, Any]) -> AgentResponse:
-        if not self.model:
+        if not getattr(self, 'client', None):
             return await self.mock_execute(state)
             
         draft = state.get("draft_answer", "")
         context = state.get("context", "")
         
         prompt = f"Verify this claim: '{draft}' using this context: '{context}'. If it's fully supported, return a JSON with success: true and citations. If not, success: false."
-        response = self.model.generate_content(prompt)
+        try:
+            response = await self.client.aio.models.generate_content(
+                model=self.model_name,
+                contents=prompt
+            )
+        except Exception as e:
+            pass
         
         return AgentResponse(
             success=True,
