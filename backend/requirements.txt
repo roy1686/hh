@@ -8,3 +8,4 @@ pymupdf>=1.23.6
 pytest>=7.4.3
 python-multipart>=0.0.6
 httpx>=0.25.1
+python-docx
