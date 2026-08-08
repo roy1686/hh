@@ -4,12 +4,12 @@ import { FileText, Shield, AlertTriangle, Users, TrendingUp, DollarSign } from '
 import { useAppContext } from '../store/AppContext';
 
 // Animated Counter Component
-function AnimatedCounter({ value }: { value: number }) {
-  const [displayValue, setDisplayValue] = useState(0);
+function AnimatedCounter({ value }: { value: number | undefined }) {
+  const [displayValue, setDisplayValue] = useState<number>(0);
 
   useEffect(() => {
-    let start = displayValue;
-    const end = value;
+    let start = displayValue || 0;
+    const end = value ?? 0;
     if (start === end) return;
     
     const duration = 2000;
@@ -34,7 +34,7 @@ function AnimatedCounter({ value }: { value: number }) {
     requestAnimationFrame(animate);
   }, [value]);
 
-  return <span>{displayValue.toLocaleString()}</span>;
+  return <span>{Number(displayValue ?? 0).toLocaleString()}</span>;
 }
 
 export function CommandCenter() {

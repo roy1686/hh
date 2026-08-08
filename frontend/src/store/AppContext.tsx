@@ -21,6 +21,7 @@ type AppState = {
     documentsProcessed: number;
     complianceScore: number;
     riskScore: number;
+    activeAgents: number;
   };
   currentAnalysis: AnalysisResult | null;
   setDocumentContext: (text: string, documentId: string) => void;
@@ -38,7 +39,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [metrics, setMetrics] = useState({
     documentsProcessed: 12453,
     complianceScore: 0,
-    riskScore: 0
+    riskScore: 0,
+    activeAgents: 4
   });
 
   const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(null);

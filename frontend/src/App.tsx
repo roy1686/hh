@@ -20,6 +20,7 @@ import { KnowledgeBase } from './pages/KnowledgeBase';
 import { Integrations } from './pages/Integrations';
 import { AuditTrail } from './pages/AuditTrail';
 import { SplashScreen } from './pages/SplashScreen';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { useState } from 'react';
 
 function App() {
@@ -32,7 +33,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/app" element={<DashboardLayout />}>
+      <Route path="/app" element={<ErrorBoundary><DashboardLayout /></ErrorBoundary>}>
         <Route index element={<CommandCenter />} />
         <Route path="documents" element={<DocumentCenter />} />
         <Route path="agents" element={<AgentHub />} />
