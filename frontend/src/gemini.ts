@@ -1,7 +1,7 @@
 // Veritas AI / DocuGuard AI 
 // Secure API Wrapper
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000/api/v1";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://balanced-alignment-production-f346.up.railway.app/api/v1";
 
 export async function processQuery(query: string, context: string): Promise<string> {
     try {

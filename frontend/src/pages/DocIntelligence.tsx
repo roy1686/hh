@@ -1,13 +1,12 @@
 import { motion } from 'framer-motion';
 import { Brain, FileSearch, Search, Cpu } from 'lucide-react';
+import { useAppContext } from '../store/AppContext';
 
 export function DocIntelligence() {
-  const extractedEntities = [
-    { type: 'Organization Names', count: 12450, conf: 99.2 },
-    { type: 'Monetary Values', count: 8302, conf: 98.5 },
-    { type: 'Personal Identifiable Info (PII)', count: 450, conf: 99.9 },
-    { type: 'Legal Clauses', count: 1250, conf: 94.3 },
-  ];
+  const { currentAnalysis } = useAppContext();
+  
+  // Use API data if available, fallback to empty array safely
+  const extractedEntities = currentAnalysis?.extractedEntities || [];
 
   return (
     <div className="space-y-6">
@@ -15,27 +14,35 @@ export function DocIntelligence() {
         <Brain className="w-6 h-6 text-purple-400" /> Document Intelligence Engine
       </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {extractedEntities.map((ent, i) => (
-          <motion.div 
-            key={i} 
-            initial={{ opacity: 0, y: 20 }} 
-            animate={{ opacity: 1, y: 0 }} 
-            transition={{ delay: i * 0.1 }}
-            className="glass-panel p-6 border-t-2 border-purple-500/50 hover:bg-purple-500/5 transition-colors"
-          >
-            <h3 className="text-sm font-medium text-gray-400 mb-2">{ent.type}</h3>
-            <div className="text-3xl font-bold text-white mb-2">{ent.count.toLocaleString()}</div>
-            <div className="flex justify-between text-xs">
-              <span className="text-gray-500">Avg Confidence</span>
-              <span className="text-green-400">{ent.conf}%</span>
-            </div>
-            <div className="w-full bg-gray-800 rounded-full h-1 mt-2">
-              <div className="bg-purple-500 h-full rounded-full" style={{ width: `${ent.conf}%` }}></div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
+      {extractedEntities.length === 0 ? (
+        <div className="glass-panel p-6 text-center text-gray-500 py-12">
+          <p>No document analyzed yet or no entities extracted. Run an analysis in the Document Center.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {extractedEntities.map((ent, i) => (
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, y: 20 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: i * 0.1 }}
+              className="glass-panel p-6 border-t-2 border-purple-500/50 hover:bg-purple-500/5 transition-colors"
+            >
+              <h3 className="text-sm font-medium text-gray-400 mb-2">{ent.type || 'Unknown Entity'}</h3>
+              <div className="text-3xl font-bold text-white mb-2">
+                {Number(ent.count ?? 0).toLocaleString()}
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-gray-500">Avg Confidence</span>
+                <span className="text-green-400">{Number(ent.conf ?? 0)}%</span>
+              </div>
+              <div className="w-full bg-gray-800 rounded-full h-1 mt-2">
+                <div className="bg-purple-500 h-full rounded-full" style={{ width: `${Number(ent.conf ?? 0)}%` }}></div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
 
       <div className="glass-panel p-6">
         <div className="flex items-center justify-between mb-6">

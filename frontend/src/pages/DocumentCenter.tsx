@@ -79,6 +79,7 @@ export function DocumentCenter() {
         positiveFindings: aiResults.positiveFindings || [],
         highRiskFindings: aiResults.highRiskFindings || [],
         recommendedActions: aiResults.recommendedActions || [],
+        extractedEntities: aiResults.extractedEntities || [],
         auditTimeline: logs
       }, {
         documentsProcessed: metrics.documentsProcessed + 1,
@@ -182,7 +183,7 @@ export function DocumentCenter() {
               </div>
               <div>
                 <p className="text-xs text-gray-400">Tokens</p>
-                <p className="text-lg font-bold text-white">{performance.tokens > 0 ? performance.tokens.toLocaleString() : '--'}</p>
+                <p className="text-lg font-bold text-white">{Number(performance.tokens ?? 0) > 0 ? Number(performance.tokens ?? 0).toLocaleString() : '--'}</p>
               </div>
               <div>
                 <p className="text-xs text-gray-400">Confidence</p>

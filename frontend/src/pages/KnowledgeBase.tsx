@@ -44,7 +44,7 @@ export function KnowledgeBase() {
             
             <div className="pt-4 border-t border-white/5">
               <div className="text-sm text-gray-400">
-                <span className="font-bold text-white">{src.docs.toLocaleString()}</span> indexed documents
+                <span className="font-bold text-white">{Number(src.docs ?? 0).toLocaleString()}</span> indexed documents
               </div>
             </div>
           </motion.div>

@@ -65,10 +65,13 @@ async def analyze_document(req: AnalyzeRequest):
   ],
   "risks": [
     {{ "id": <number>, "type": "<'Financial'|'Operational'|'Legal'>", "severity": "<'High'|'Medium'|'Low'>", "description": "<string>", "location": "<string>" }}
+  ],
+  "extractedEntities": [
+    {{ "type": "<string>", "count": <number>, "conf": <number> }}
   ]
 }}
 
-Ensure there are exactly 4 compliance checks and 3 risks. Be extremely analytical and base all findings, scores, and risks strictly on the document text. Be critical. If it's a vendor agreement with a low liability cap, flag it as a risk. If it's an NDA missing signatures, flag it as fraud or risk.
+Ensure there are exactly 4 compliance checks, 3 risks, and at least 3 extracted entities. Be extremely analytical and base all findings, scores, and risks strictly on the document text. Be critical. If it's a vendor agreement with a low liability cap, flag it as a risk. If it's an NDA missing signatures, flag it as fraud or risk.
 
 Document Content:
 {req.context[:50000]}
@@ -101,9 +104,14 @@ Document Content:
                 { "id": 4, "rule": "Confidentiality Duration", "status": "Passed", "details": "Survives termination for 5 years." }
             ],
             "risks": [
-                { "id": 1, "type": "Legal", "severity": "High", "description": "Missing indemnification exposes firm to 3rd party claims.", "location": "Page 2" },
-                { "id": 2, "type": "Financial", "severity": "Medium", "description": "Uncapped damages in breach scenarios.", "location": "Page 3" },
-                { "id": 3, "type": "Operational", "severity": "Low", "description": "SLA response times not clearly defined.", "location": "Page 4" }
+                { "id": 1, "type": "Operational", "severity": "Medium", "description": "Vendor retains rights to sub-process data without explicit notification.", "location": "Section 4.2" },
+                { "id": 2, "type": "Legal", "severity": "High", "description": "Missing explicit assignment of Intellectual Property rights.", "location": "Section 7" },
+                { "id": 3, "type": "Financial", "severity": "Medium", "description": "Unclear termination penalties.", "location": "Section 9.1" }
+            ],
+            "extractedEntities": [
+                { "type": "Organization Names", "count": 3, "conf": 99.2 },
+                { "type": "Monetary Values", "count": 2, "conf": 98.5 },
+                { "type": "Legal Clauses", "count": 12, "conf": 94.3 }
             ]
         }
 

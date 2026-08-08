@@ -12,6 +12,7 @@ type AnalysisResult = {
   highRiskFindings: string[];
   recommendedActions: string[];
   auditTimeline: { time: string; msg: string }[];
+  extractedEntities?: { type: string; count: number; conf: number }[];
 };
 
 type AppState = {
@@ -69,7 +70,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         positiveFindings: [],
         highRiskFindings: [],
         recommendedActions: [],
-        auditTimeline: []
+        auditTimeline: [],
+        extractedEntities: []
       };
       return { ...base, ...data };
     });
